@@ -1,0 +1,27 @@
+# Heavy runtime + secrets — never commit.
+# (NOTE: comments must be on their own line; an inline '# ...' becomes part of the pattern.)
+
+# The ~840MB venv (recreate with setup.sh)
+cognee-env/
+
+# Local graph + vector + relational stores
+.cognee-data/
+
+# Lean CLAUDE_CONFIG_DIRs that SYMLINK LIVE CREDENTIALS — must never be committed
+.shim-config/
+**/.worker-config/
+.shim-ready.json
+.pool.*
+*.shim.log
+shim*.log
+
+# Python
+**/__pycache__/
+*.pyc
+
+# Fetched transcript data — re-fetched on demand; content belongs to the video's creator
+apps/transcripts/*.vtt
+apps/transcripts/*.info.json
+apps/transcripts/*.transcript.txt
+apps/transcripts/*.meta.json
+apps/transcripts/*.outline.md

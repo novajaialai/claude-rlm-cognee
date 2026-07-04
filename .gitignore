@@ -25,3 +25,5 @@ apps/transcripts/*.info.json
 apps/transcripts/*.transcript.txt
 apps/transcripts/*.meta.json
 apps/transcripts/*.outline.md
+.shim-config/
+.shim-ready.json

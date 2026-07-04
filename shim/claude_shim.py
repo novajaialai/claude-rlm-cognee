@@ -26,15 +26,50 @@ READY = os.path.join(REPO_ROOT, ".shim-ready.json")
 FENCE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.IGNORECASE)
 
 
+def _creds_fresh(path: str) -> bool:
+    """True if the credentials file exists and its OAuth token is not expired."""
+    try:
+        with open(path) as f:
+            oauth = json.load(f).get("claudeAiOauth", {})
+        return float(oauth.get("expiresAt", 0)) > (time.time() + 60) * 1000
+    except Exception:
+        return False
+
+
+def _macos_keychain_creds() -> str | None:
+    """On macOS the live OAuth token is in the Keychain, not ~/.claude/.credentials.json."""
+    try:
+        out = subprocess.run(
+            ["security", "find-generic-password", "-s", "Claude Code-credentials", "-w"],
+            capture_output=True, text=True, timeout=10)
+        return out.stdout.strip() or None
+    except Exception:
+        return None
+
+
 def _lean_env() -> dict:
-    """Lean CLAUDE_CONFIG_DIR (empty settings + symlinked creds) -> no hooks/MCP, fast, free."""
+    """Lean CLAUDE_CONFIG_DIR (empty settings + fresh creds) -> no hooks/MCP, fast, free.
+
+    Linux: symlink ~/.claude/.credentials.json (canonical there).
+    macOS: the canonical token lives in the Keychain and the file copy can be stale —
+    export the Keychain JSON into the lean dir whenever the local copy is missing/expired.
+    """
     try:
         os.makedirs(SHIM_CONFIG, exist_ok=True)
         with open(os.path.join(SHIM_CONFIG, "settings.json"), "w") as f:
             f.write("{}")
         src = os.path.expanduser("~/.claude/.credentials.json")
         dst = os.path.join(SHIM_CONFIG, ".credentials.json")
-        if os.path.exists(src) and not (os.path.islink(dst) and os.readlink(dst) == src):
+        if sys.platform == "darwin":
+            if not _creds_fresh(dst):
+                raw = _macos_keychain_creds()
+                if raw:
+                    if os.path.lexists(dst):
+                        os.remove(dst)
+                    fd = os.open(dst, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+                    with os.fdopen(fd, "w") as f:
+                        f.write(raw)
+        elif os.path.exists(src) and not (os.path.islink(dst) and os.readlink(dst) == src):
             if os.path.lexists(dst):
                 os.remove(dst)
             os.symlink(src, dst)

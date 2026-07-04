@@ -48,3 +48,9 @@ ledgers every call and rebuilds a task→model index nightly
 (com.jake.openrouter-index). RLM map steps can use `or --tier bulk`
 (deepseek-v4-flash) with fusion-trio reduces; Cognee stores weekly usage stats.
 Switchboard's nightly eval LaunchAgent was removed; the repo remains archived.
+
+## Canon: the two-stage gate (2026-07-03)
+
+Sonnet 5 (medium) = meta-router on all Hermes surfaces; routine routing delegates
+to DeepSeek (`or route`), execution on the tiers, Opus = agentic escalation only.
+Settled by two evals (gatekeeper 50/50; architecture 72/75 @ half sonnet-solo cost).

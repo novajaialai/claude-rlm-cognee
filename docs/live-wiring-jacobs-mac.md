@@ -38,3 +38,13 @@ the stores (Cognee :8011, knowledge.db, learnings/, shared Obsidian vault), and 
 skills sync from `~/.claude/skills` via `~/projects/agent-parity/sync-skills.sh`.
 Hermes' memories + 232 messages were harvested into the spine (`hermes_harvest.py`).
 Its `computer-use` skill is renamed `.disabled` (2026-06-13 incident rule).
+
+## OpenRouter portal (2026-07-03)
+
+OpenRouter replaced Switchboard as the routing layer. Hermes' main model, MoA
+preset (fusion-trio), subagent delegation, and auxiliary tasks all run through
+it; one-shot tiered calls via the `or` CLI (~/projects/openrouter-max), which
+ledgers every call and rebuilds a task→model index nightly
+(com.jake.openrouter-index). RLM map steps can use `or --tier bulk`
+(deepseek-v4-flash) with fusion-trio reduces; Cognee stores weekly usage stats.
+Switchboard's nightly eval LaunchAgent was removed; the repo remains archived.

@@ -29,3 +29,12 @@ Siblings on the same box:
 
 Locality: everything is local except `claude -p` itself. No Cognee cloud key or base_url is
 configured anywhere on this machine (config.json is {}, api_key.json points at localhost:8011).
+
+## Hermes parity (2026-07-03)
+
+Hermes (`~/.hermes`, Nous agent) now runs on the SAME spine: its SOUL.md carries the
+build quality bar + shared-memory protocol, `~/.hermes/memories/PROTOCOL.md` documents
+the stores (Cognee :8011, knowledge.db, learnings/, shared Obsidian vault), and portable
+skills sync from `~/.claude/skills` via `~/projects/agent-parity/sync-skills.sh`.
+Hermes' memories + 232 messages were harvested into the spine (`hermes_harvest.py`).
+Its `computer-use` skill is renamed `.disabled` (2026-06-13 incident rule).

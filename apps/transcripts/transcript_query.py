@@ -48,14 +48,39 @@ SUB_MODEL = os.environ.get("TRANSCRIPT_SUB_MODEL")  # optional override of FAST_
 # pool-notes.md for the full investigation.)
 WORKER_CONFIG = os.path.join(STORE, ".worker-config")
 
+def _creds_fresh(path: str) -> bool:
+    """True if the credentials file exists and its OAuth token is not expired."""
+    try:
+        with open(path) as f:
+            oauth = json.load(f).get("claudeAiOauth", {})
+        import time as _t
+        return float(oauth.get("expiresAt", 0)) > (_t.time() + 60) * 1000
+    except Exception:
+        return False
+
+
 def _lean_env() -> dict | None:
+    """Linux: symlink ~/.claude/.credentials.json. macOS: the live token is in the
+    Keychain and the file copy can be stale — export it whenever missing/expired."""
     try:
         os.makedirs(WORKER_CONFIG, exist_ok=True)
         with open(os.path.join(WORKER_CONFIG, "settings.json"), "w") as f:
             f.write("{}")
         src = os.path.expanduser("~/.claude/.credentials.json")
         dst = os.path.join(WORKER_CONFIG, ".credentials.json")
-        if os.path.exists(src) and not (os.path.islink(dst) and os.readlink(dst) == src):
+        if sys.platform == "darwin":
+            if not _creds_fresh(dst):
+                r = subprocess.run(
+                    ["security", "find-generic-password", "-s", "Claude Code-credentials", "-w"],
+                    capture_output=True, text=True, timeout=10)
+                raw = (r.stdout or "").strip()
+                if raw:
+                    if os.path.lexists(dst):
+                        os.remove(dst)
+                    fd = os.open(dst, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+                    with os.fdopen(fd, "w") as f:
+                        f.write(raw)
+        elif os.path.exists(src) and not (os.path.islink(dst) and os.readlink(dst) == src):
             if os.path.lexists(dst):
                 os.remove(dst)
             os.symlink(src, dst)
